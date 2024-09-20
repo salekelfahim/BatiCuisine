@@ -1,13 +1,13 @@
-package repository;
+package repository.impl;
 
 import config.DataBaseConnection;
 
 import java.sql.Connection;
 
-public class MateriauRepository {
+public class DevisRepositoryImpl {
     private Connection connection;
 
-    public MateriauRepository() {
+    public DevisRepositoryImpl() {
         this.connection = DataBaseConnection.getInstance().getConnection();
     }
 }

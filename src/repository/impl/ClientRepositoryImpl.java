@@ -1,4 +1,4 @@
-package repository;
+package repository.impl;
 
 import config.DataBaseConnection;
 import domain.Client;
@@ -8,10 +8,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class ClientRepository {
+public class ClientRepositoryImpl {
     private Connection connection;
 
-    public ClientRepository() {
+    public ClientRepositoryImpl() {
         this.connection = DataBaseConnection.getInstance().getConnection();
     }
     public void save(Client client) {
