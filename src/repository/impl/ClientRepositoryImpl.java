@@ -2,13 +2,14 @@ package repository.impl;
 
 import config.DataBaseConnection;
 import domain.Client;
+import repository.interfaces.IClientRepository;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class ClientRepositoryImpl {
+public class ClientRepositoryImpl implements IClientRepository {
     private Connection connection;
 
     public ClientRepositoryImpl() {
