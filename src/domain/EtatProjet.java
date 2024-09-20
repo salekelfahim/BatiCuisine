@@ -1,4 +1,8 @@
 package domain;
 
-public class EtatProjet {
+public enum EtatProjet {
+    ENCOURS,
+    TERMINE,
+    ANNULE
+
 }
