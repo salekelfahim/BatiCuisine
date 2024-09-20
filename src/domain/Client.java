@@ -20,6 +20,10 @@ public class Client {
         this.estProfessionnel = estProfessionnel;
     }
 
+    public Client(long id, String nom, String adresse, String telephone, boolean estProfessionnel) {
+    }
+
+
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     public String getNom() { return nom; }
