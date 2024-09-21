@@ -27,7 +27,7 @@ public class ConsoleView {
             System.out.print("Choose an option: ");
 
             int choice = scanner.nextInt();
-            scanner.nextLine(); // Consume newline
+            scanner.nextLine();
 
             switch (choice) {
                 case 1:
@@ -83,7 +83,7 @@ public class ConsoleView {
         System.out.println("\n=== Update a client ===");
         System.out.print("Enter client ID to update: ");
         Long id = scanner.nextLong();
-        scanner.nextLine(); // Consume newline
+        scanner.nextLine();
 
         Optional<Client> clientOpt = clientService.findById(id);
         if (clientOpt.isPresent()) {
@@ -119,7 +119,7 @@ public class ConsoleView {
         System.out.println("\n=== Delete a client ===");
         System.out.print("Enter client ID to delete: ");
         Long id = scanner.nextLong();
-        scanner.nextLine(); // Consume newline
+        scanner.nextLine();
 
         Optional<Client> clientOpt = clientService.findById(id);
         if (clientOpt.isPresent()) {

@@ -18,6 +18,7 @@ public class Client {
         this.adresse = adresse;
         this.telephone = telephone;
         this.estProfessionnel = estProfessionnel;
+        this.projets = new ArrayList<>();
     }
 
     public Client(long id, String nom, String adresse, String telephone, boolean estProfessionnel) {
@@ -36,4 +37,16 @@ public class Client {
     public void setEstProfessionnel(boolean estProfessionnel) { this.estProfessionnel = estProfessionnel; }
     public List<Projet> getProjets() { return projets; }
     public void setProjets(List<Projet> projets) { this.projets = projets; }
+
+    @Override
+    public String toString() {
+        return "Client{" +
+                "id=" + id +
+                ", nom='" + nom + '\'' +
+                ", adresse='" + adresse + '\'' +
+                ", telephone='" + telephone + '\'' +
+                ", estProfessionnel=" + estProfessionnel +
+                ", projets=" + projets +
+                '}';
+    }
 }
