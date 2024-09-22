@@ -126,7 +126,7 @@ public class ProjetRepositoryImpl implements IProjetRepository {
         projet.setNomProjet(rs.getString("nom_projet"));
         projet.setMargeBeneficiaire(BigDecimal.valueOf(rs.getDouble("marge_beneficiaire")));
         projet.setCoutTotal(BigDecimal.valueOf(rs.getDouble("cout_total")));
-        projet.setEtatProjet(EtatProjet.valueOf(rs.getString("etat_projet")));
+//        projet.setEtatProjet(EtatProjet.valueOf(rs.getString("etat_projet")));
         projet.getClient().setId(rs.getLong("client_id"));
         return projet;
     }

@@ -2,7 +2,7 @@ package domain;
 
 import java.math.BigDecimal;
 
-public abstract class Composant {
+public class Composant {
     private Long id;
     private String nom;
     private String typeComposant;
@@ -29,6 +29,19 @@ public abstract class Composant {
     public Projet getProjet() { return projet; }
     public void setProjet(Projet projet) { this.projet = projet; }
 
-    public abstract BigDecimal calculerCout();
+    public BigDecimal calculerCout() {
+        return null;
+    }
+
+    @Override
+    public String toString() {
+        return "Composant{" +
+                "id=" + id +
+                ", nom='" + nom + '\'' +
+                ", typeComposant='" + typeComposant + '\'' +
+                ", tauxTva=" + tauxTva +
+                ", projet=" + projet +
+                '}';
+    }
 }
 
