@@ -1,15 +1,18 @@
 package repository.interfaces;
 
 import domain.Composant;
+import domain.Materiau;
+import domain.MainOeuvre;
 
 import java.util.List;
-import java.util.Optional;
 
 public interface IComposantRepository {
-    Composant save(Composant composant);
-    Optional<Composant> findById(Long id);
-    List<Composant> findAll();
-    List<Composant> findByProjetId(Long projetId);
-    Composant update(Composant composant);
-    void delete(Long id);
+    void addComposant(Composant composant);
+    List<Composant> getAllComposants();
+    Composant getComposantById(Long id);
+    void updateComposant(Composant composant);
+    void deleteComposant(Long id);
+
+    List<Materiau> getAllMateriaux();
+    List<MainOeuvre> getAllMainOeuvres();
 }

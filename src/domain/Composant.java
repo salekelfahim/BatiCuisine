@@ -29,7 +29,10 @@ public class Composant {
     public Projet getProjet() { return projet; }
     public void setProjet(Projet projet) { this.projet = projet; }
 
-    public abstract BigDecimal calculerCout();
+    public BigDecimal calculerCout() {
+        return null;
+    }
+
     @Override
     public String toString() {
         return "Composant{" +

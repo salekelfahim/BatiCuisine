@@ -1,8 +1,11 @@
 package repository.impl;
 
-import config.DataBaseConnection;
 import domain.Composant;
+import domain.Materiau;
+import domain.MainOeuvre;
+import domain.Projet;
 import repository.interfaces.IComposantRepository;
+import config.DataBaseConnection;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -10,119 +13,175 @@ import java.util.List;
 import java.util.Optional;
 
 public class ComposantRepositoryImpl implements IComposantRepository {
-    private Connection connection;
-
-    public ComposantRepositoryImpl() {
-        this.connection = DataBaseConnection.getInstance().getConnection();
+    @Override
+    public void addComposant(Composant composant) {
+        String query = "INSERT INTO composants (nom, type_composant, taux_tva, projet_id) VALUES (?, ?, ?, ?)";
+        try (Connection conn = DataBaseConnection.getInstance().getConnection(); // Use instance method
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setString(1, composant.getNom());
+            stmt.setString(2, composant.getTypeComposant());
+            stmt.setBigDecimal(3, composant.getTauxTva());
+            stmt.setLong(4, composant.getProjet().getId());
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
-    public Composant save(Composant composant) {
-        String sql = "INSERT INTO composants (nom, type_composant, taux_tva, projet_id) VALUES (?, ?, ?, ?)";
-        try (PreparedStatement pstmt = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            pstmt.setString(1, composant.getNom());
-            pstmt.setString(2, composant.getTypeComposant());
-            pstmt.setBigDecimal(3, composant.getTauxTva());
-            pstmt.setLong(4, composant.getProjet().getId());
-
-            int affectedRows = pstmt.executeUpdate();
-            if (affectedRows == 0) {
-                throw new SQLException("Creating composant failed, no rows affected.");
-            }
-
-            try (ResultSet generatedKeys = pstmt.getGeneratedKeys()) {
-                if (generatedKeys.next()) {
-                    composant.setId(generatedKeys.getLong(1));
+    public List<Composant> getAllComposants() {
+        List<Composant> composants = new ArrayList<>();
+        String query = "SELECT * FROM composants";
+        try (Connection conn = DataBaseConnection.getInstance().getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(query)) {
+            while (rs.next()) {
+                Composant composant;
+                String type = rs.getString("type_composant");
+                if ("Materiau".equals(type)) {
+                    composant = new Materiau(
+                            rs.getString("nom"),
+                            rs.getBigDecimal("taux_tva"),
+                            fetchProjetById(rs.getLong("projet_id")),
+                            rs.getBigDecimal("cout_unitaire"),
+                            rs.getBigDecimal("quantite"),
+                            rs.getBigDecimal("cout_transport"),
+                            rs.getBigDecimal("coefficient_qualite")
+                    );
                 } else {
-                    throw new SQLException("Creating composant failed, no ID obtained.");
+                    composant = new MainOeuvre(
+                            rs.getString("nom"),
+                            rs.getBigDecimal("taux_tva"),
+                            fetchProjetById(rs.getLong("projet_id")),
+                            rs.getBigDecimal("taux_horaire"),
+                            rs.getBigDecimal("heures_travail"),
+                            rs.getBigDecimal("productivite_ouvrier")
+                    );
+                }
+                composants.add(composant);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return composants;
+    }
+
+    @Override
+    public Composant getComposantById(Long id) {
+        String query = "SELECT * FROM composants WHERE id = ?";
+        try (Connection conn = DataBaseConnection.getInstance().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setLong(1, id);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                String type = rs.getString("type_composant");
+                if ("Materiau".equals(type)) {
+                    return new Materiau(
+                            rs.getString("nom"),
+                            rs.getBigDecimal("taux_tva"),
+                            fetchProjetById(rs.getLong("projet_id")),
+                            rs.getBigDecimal("cout_unitaire"),
+                            rs.getBigDecimal("quantite"),
+                            rs.getBigDecimal("cout_transport"),
+                            rs.getBigDecimal("coefficient_qualite")
+                    );
+                } else {
+                    return new MainOeuvre(
+                            rs.getString("nom"),
+                            rs.getBigDecimal("taux_tva"),
+                            fetchProjetById(rs.getLong("projet_id")),
+                            rs.getBigDecimal("taux_horaire"),
+                            rs.getBigDecimal("heures_travail"),
+                            rs.getBigDecimal("productivite_ouvrier")
+                    );
                 }
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return composant;
+        return null; // Return null if not found
     }
 
     @Override
-    public Optional<Composant> findById(Long id) {
-        String sql = "SELECT * FROM composants WHERE id = ?";
-        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
-            pstmt.setLong(1, id);
-            ResultSet rs = pstmt.executeQuery();
-            if (rs.next()) {
-                return Optional.of(mapResultSetToComposant(rs));
-            }
+    public void updateComposant(Composant composant) {
+        String query = "UPDATE composants SET nom = ?, type_composant = ?, taux_tva = ?, projet_id = ? WHERE id = ?";
+        try (Connection conn = DataBaseConnection.getInstance().getConnection(); // Use instance method
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setString(1, composant.getNom());
+            stmt.setString(2, composant.getTypeComposant());
+            stmt.setBigDecimal(3, composant.getTauxTva());
+            stmt.setLong(4, composant.getProjet().getId());
+            stmt.setLong(5, composant.getId());
+            stmt.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return Optional.empty();
     }
 
     @Override
-    public List<Composant> findAll() {
-        List<Composant> composants = new ArrayList<>();
-        String sql = "SELECT * FROM composants";
-        try (Statement stmt = connection.createStatement();
-             ResultSet rs = stmt.executeQuery(sql)) {
+    public void deleteComposant(Long id) {
+        String query = "DELETE FROM composants WHERE id = ?";
+        try (Connection conn = DataBaseConnection.getInstance().getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+            stmt.setLong(1, id);
+            stmt.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public List<Materiau> getAllMateriaux() {
+        List<Materiau> materiaux = new ArrayList<>();
+        String query = "SELECT * FROM composants WHERE type_composant = 'Materiau'";
+        try (Connection conn = DataBaseConnection.getInstance().getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(query)) {
             while (rs.next()) {
-                composants.add(mapResultSetToComposant(rs));
+                Materiau materiau = new Materiau(
+                        rs.getString("nom"),
+                        rs.getBigDecimal("taux_tva"),
+                        fetchProjetById(rs.getLong("projet_id")),
+                        rs.getBigDecimal("cout_unitaire"),
+                        rs.getBigDecimal("quantite"),
+                        rs.getBigDecimal("cout_transport"),
+                        rs.getBigDecimal("coefficient_qualite")
+                );
+                materiaux.add(materiau);
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return composants;
+        return materiaux;
     }
 
     @Override
-    public List<Composant> findByProjetId(Long projetId) {
-        List<Composant> composants = new ArrayList<>();
-        String sql = "SELECT * FROM composants WHERE projet_id = ?";
-        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
-            pstmt.setLong(1, projetId);
-            ResultSet rs = pstmt.executeQuery();
+    public List<MainOeuvre> getAllMainOeuvres() {
+        List<MainOeuvre> mainOeuvres = new ArrayList<>();
+        String query = "SELECT * FROM composants WHERE type_composant = 'MainOeuvre'";
+        try (Connection conn = DataBaseConnection.getInstance().getConnection();
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(query)) {
             while (rs.next()) {
-                composants.add(mapResultSetToComposant(rs));
+                MainOeuvre mainOeuvre = new MainOeuvre(
+                        rs.getString("nom"),
+                        rs.getBigDecimal("taux_tva"),
+                        fetchProjetById(rs.getLong("projet_id")),
+                        rs.getBigDecimal("taux_horaire"),
+                        rs.getBigDecimal("heures_travail"),
+                        rs.getBigDecimal("productivite_ouvrier")
+                );
+                mainOeuvres.add(mainOeuvre);
             }
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return composants;
+        return mainOeuvres;
     }
 
-    @Override
-    public Composant update(Composant composant) {
-        String sql = "UPDATE composants SET nom = ?, type_composant = ?, taux_tva = ?, projet_id = ? WHERE id = ?";
-        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
-            pstmt.setString(1, composant.getNom());
-            pstmt.setString(2, composant.getTypeComposant());
-            pstmt.setBigDecimal(3, composant.getTauxTva());
-            pstmt.setLong(4, composant.getProjet().getId());
-            pstmt.setLong(5, composant.getId());
-            pstmt.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return composant;
-    }
-
-    @Override
-    public void delete(Long id) {
-        String sql = "DELETE FROM composants WHERE id = ?";
-        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
-            pstmt.setLong(1, id);
-            pstmt.executeUpdate();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
-
-    private Composant mapResultSetToComposant(ResultSet rs) throws SQLException {
-        Composant composant = new Composant();
-        composant.setId(rs.getLong("id"));
-        composant.setNom(rs.getString("nom"));
-        composant.setTypeComposant(rs.getString("type_composant"));
-        composant.setTauxTva(rs.getBigDecimal("taux_tva"));
-        composant.setProjet(composant.getProjet());
-        return composant;
+    private Projet fetchProjetById(Long projetId) {
+        ProjetRepositoryImpl projetRepository = new ProjetRepositoryImpl();
+        Optional<Projet> projetOptional = projetRepository.findById(projetId);
+        return projetOptional.orElse(null);
     }
 }

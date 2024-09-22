@@ -1,10 +1,11 @@
 package service;
 
 import domain.Composant;
+import domain.Materiau;
+import domain.MainOeuvre;
 import repository.interfaces.IComposantRepository;
 
 import java.util.List;
-import java.util.Optional;
 
 public class ComposantService {
     private final IComposantRepository composantRepository;
@@ -13,27 +14,31 @@ public class ComposantService {
         this.composantRepository = composantRepository;
     }
 
-    public Composant createComposant(Composant composant) {
-        return composantRepository.save(composant);
-    }
-
-    public Optional<Composant> getComposantById(Long id) {
-        return composantRepository.findById(id);
+    public void addComposant(Composant composant) {
+        composantRepository.addComposant(composant);
     }
 
     public List<Composant> getAllComposants() {
-        return composantRepository.findAll();
+        return composantRepository.getAllComposants();
     }
 
-    public List<Composant> getComposantsByProjetId(Long projetId) {
-        return composantRepository.findByProjetId(projetId);
+    public Composant getComposantById(Long id) {
+        return composantRepository.getComposantById(id);
     }
 
-    public Composant updateComposant(Composant composant) {
-        return composantRepository.update(composant);
+    public void updateComposant(Composant composant) {
+        composantRepository.updateComposant(composant);
     }
 
     public void deleteComposant(Long id) {
-        composantRepository.delete(id);
+        composantRepository.deleteComposant(id);
+    }
+
+    public List<Materiau> getAllMateriaux() {
+        return composantRepository.getAllMateriaux();
+    }
+
+    public List<MainOeuvre> getAllMainOeuvres() {
+        return composantRepository.getAllMainOeuvres();
     }
 }
