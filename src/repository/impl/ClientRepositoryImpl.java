@@ -101,6 +101,27 @@ public class ClientRepositoryImpl implements IClientRepository {
             e.printStackTrace();
         }
     }
+
+    public Optional<Client> findByNom(String nom) throws SQLException {
+        String query = "SELECT * FROM clients WHERE nom = ?";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            preparedStatement.setString(1, nom);
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    Client client = new Client(
+                            resultSet.getString("nom"),
+                            resultSet.getString("adresse"),
+                            resultSet.getString("telephone"),
+                            resultSet.getBoolean("est_professionnel")
+                    );
+                    client.setId(resultSet.getLong("id"));
+                    return Optional.of(client);
+                } else {
+                    return Optional.empty();
+                }
+            }
+        }
+    }
 }
 
 

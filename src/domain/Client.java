@@ -22,6 +22,12 @@ public class Client {
     }
 
     public Client(long id, String nom, String adresse, String telephone, boolean estProfessionnel) {
+        this.id = id;
+        this.nom = nom;
+        this.adresse = adresse;
+        this.telephone = telephone;
+        this.estProfessionnel = estProfessionnel;
+        this.projets = new ArrayList<>();
     }
 
 

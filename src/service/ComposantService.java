@@ -14,7 +14,7 @@ public class ComposantService {
         this.composantRepository = composantRepository;
     }
 
-    public void addComposant(Composant composant) {
+    public void save(Composant composant) {
         composantRepository.addComposant(composant);
     }
 

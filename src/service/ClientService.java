@@ -3,6 +3,7 @@ package service;
 import domain.Client;
 import repository.interfaces.IClientRepository;
 
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 
@@ -31,5 +32,9 @@ public class ClientService {
 
     public void delete(Long id) {
         clientRepository.delete(id);
+    }
+
+    public Optional<Client> findByNom(String nom) throws SQLException {
+        return clientRepository.findByNom(nom);
     }
 }

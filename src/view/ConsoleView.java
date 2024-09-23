@@ -1,29 +1,45 @@
 package view;
 
-import domain.Client;
+import domain.*;
 import service.ClientService;
+import service.ProjetService;
+import service.ComposantService;
+import service.DevisService;
 
+import java.math.BigDecimal;
+import java.sql.SQLException;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 import java.util.Scanner;
 
 public class ConsoleView {
     private final ClientService clientService;
+    private final ProjetService projetService;
+    private final ComposantService composantService;
+    private final DevisService devisService;
     private final Scanner scanner;
 
-    public ConsoleView(ClientService clientService) {
+    public ConsoleView(ClientService clientService, ProjetService projetService, ComposantService composantService, DevisService devisService) {
         this.clientService = clientService;
+        this.projetService = projetService;
+        this.composantService = composantService;
+        this.devisService = devisService;
         this.scanner = new Scanner(System.in);
     }
 
-    public void displayMenu() {
+    public void displayMenu() throws SQLException {
         while (true) {
-            System.out.println("\n=== Client Management ===");
+            System.out.println("\n=== Management Menu ===");
             System.out.println("1. Add a new client");
             System.out.println("2. Show all clients");
-            System.out.println("3. Update a client");
-            System.out.println("4. Delete a client");
-            System.out.println("5. Exit");
+            System.out.println("3. Find Client by Name");
+            System.out.println("4. Update a client");
+            System.out.println("5. Delete a client");
+            System.out.println("6. Add a new project");
+            System.out.println("7. Add a new component");
+            System.out.println("8. Generate devis");
+            System.out.println("9. Exit");
             System.out.print("Choose an option: ");
 
             int choice = scanner.nextInt();
@@ -37,12 +53,24 @@ public class ConsoleView {
                     showAllClients();
                     break;
                 case 3:
-                    updateClient();
+                    findClientByNom();
                     break;
                 case 4:
-                    deleteClient();
+                    updateClient();
                     break;
                 case 5:
+                    deleteClient();
+                    break;
+                case 6:
+                    addProject();
+                    break;
+                case 7:
+                    addComponent();
+                    break;
+                case 8:
+                    generateDevis();
+                    break;
+                case 9:
                     System.out.println("Exiting...");
                     return;
                 default:
@@ -74,7 +102,8 @@ public class ConsoleView {
             System.out.println("No clients found.");
         } else {
             for (Client client : clients) {
-                System.out.println(client);
+                System.out.printf("ID: %d, Nom: %s, Téléphone: %s, Adresse : %s , Pro: %s %n",
+                        client.getId(), client.getNom(), client.getTelephone(),client.getAdresse(), client.isEstProfessionnel() ? "true" : "false");
             }
         }
     }
@@ -136,4 +165,94 @@ public class ConsoleView {
             System.out.println("Client not found.");
         }
     }
-}
+
+    private void addProject() {
+        System.out.println("\n=== Add a new project ===");
+        System.out.print("Enter project name: ");
+        String nomProjet = scanner.nextLine();
+        System.out.print("Enter total cost: ");
+        BigDecimal coutTotal = scanner.nextBigDecimal();
+        System.out.print("Enter profit margin: ");
+        BigDecimal margeBeneficiaire = scanner.nextBigDecimal();
+        scanner.nextLine(); // Consume newline
+        System.out.print("Enter project state (e.g., IN_PROGRESS, COMPLETED): ");
+        String etatProjetStr = scanner.nextLine();
+        EtatProjet etatProjet = EtatProjet.valueOf(etatProjetStr.toUpperCase());
+
+        System.out.print("Enter client ID: ");
+        Long clientId = scanner.nextLong();
+        Client client = clientService.findById(clientId).orElse(null);
+
+        if (client != null) {
+            Projet projet = new Projet(nomProjet, margeBeneficiaire, coutTotal, etatProjet, client);
+            projetService.createProjet(projet);
+            System.out.println("Project added successfully!");
+        } else {
+            System.out.println("Client not found.");
+        }
+    }
+
+    private void addComponent() {
+        System.out.println("\n=== Add a new component ===");
+        System.out.print("Enter component name: ");
+        String nomComposant = scanner.nextLine();
+
+        System.out.print("Enter component type: ");
+        String typeComposant = scanner.nextLine();
+
+        System.out.print("Enter VAT rate (taux TVA): ");
+        BigDecimal tauxTva = scanner.nextBigDecimal();
+        scanner.nextLine();
+
+        System.out.print("Enter project ID associated with this component: ");
+        Long projetId = scanner.nextLong();
+        scanner.nextLine();
+
+        Projet projet = projetService.getProjetById(projetId).orElse(null);
+        if (projet != null) {
+            Composant composant = new Composant(nomComposant, typeComposant, tauxTva, projet);
+            composantService.save(composant);
+            System.out.println("Component added successfully!");
+        } else {
+            System.out.println("Project not found. Component not added.");
+        }
+    }
+
+    private void generateDevis () {
+            System.out.println("\n=== Generate a quote (devis) ===");
+            System.out.print("Enter project ID: ");
+            Long projetId = scanner.nextLong();
+            Projet projet = projetService.getProjetById(projetId).orElse(null);
+
+            if (projet != null) {
+                System.out.print("Enter estimated amount: ");
+                BigDecimal montantEstime = scanner.nextBigDecimal();
+                System.out.print("Enter emission date (YYYY-MM-DD): ");
+                String dateEmissionStr = scanner.next();
+                LocalDate dateEmission = LocalDate.parse(dateEmissionStr);
+                System.out.print("Enter validity date (YYYY-MM-DD): ");
+                String dateValiditeStr = scanner.next();
+                LocalDate dateValidite = LocalDate.parse(dateValiditeStr);
+                System.out.print("Is the quote accepted (true/false): ");
+                boolean accepte = scanner.nextBoolean();
+
+                Devis devis = new Devis(montantEstime, dateEmission, dateValidite, accepte, projet);
+                devisService.createDevis(devis);
+                System.out.println("Quote generated successfully!");
+            } else {
+                System.out.println("Project not found.");
+            }
+        }
+    private void findClientByNom() throws SQLException {
+        System.out.println("\n=== Find Client by Name ===");
+        System.out.print("Enter client name: ");
+        String nom = scanner.nextLine();
+
+        Optional<Client> clientOpt = clientService.findByNom(nom);
+        if (clientOpt.isPresent()) {
+            System.out.println("Client found: " + clientOpt.get());
+        } else {
+            System.out.println("No client found with the name: " + nom);
+        }
+    }
+    }
