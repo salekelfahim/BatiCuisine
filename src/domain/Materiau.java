@@ -8,9 +8,7 @@ public class Materiau extends Composant {
     private BigDecimal coutTransport;
     private BigDecimal coefficientQualite;
 
-    public Materiau() {}
-
-    public Materiau(String nom, BigDecimal tauxTva, Projet projet, BigDecimal coutUnitaire, BigDecimal quantite, BigDecimal coutTransport, BigDecimal coefficientQualite) {
+    public Materiau(String nom, String typeComposant, BigDecimal tauxTva, Projet projet, BigDecimal coutUnitaire, BigDecimal quantite, BigDecimal coutTransport, BigDecimal coefficientQualite) {
         super(nom, "Materiau", tauxTva, projet);
         this.coutUnitaire = coutUnitaire;
         this.quantite = quantite;
@@ -29,6 +27,10 @@ public class Materiau extends Composant {
 
     @Override
     public BigDecimal calculerCout() {
+        BigDecimal costWithoutTax = coutUnitaire.multiply(quantite).multiply(coefficientQualite).add(coutTransport);
+        return costWithoutTax.add(costWithoutTax.multiply(getTauxTva()).divide(BigDecimal.valueOf(100)));
+    }
+    public BigDecimal calculerCoutSansTVA() {
         return coutUnitaire.multiply(quantite).multiply(coefficientQualite).add(coutTransport);
     }
 }

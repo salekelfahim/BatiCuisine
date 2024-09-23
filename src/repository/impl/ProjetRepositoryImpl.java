@@ -1,6 +1,8 @@
 package repository.impl;
 
 import config.DataBaseConnection;
+import domain.Client;
+import domain.EtatProjet;
 import domain.Projet;
 import repository.interfaces.IProjetRepository;
 
@@ -20,11 +22,11 @@ public class ProjetRepositoryImpl implements IProjetRepository {
 
     @Override
     public Projet save(Projet projet) {
-        String sql = "INSERT INTO projets (nom_projet, marge_beneficiaire, cout_total, etat_projet, client_id) VALUES (?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO projets (nom_projet, marge_beneficiaire, cout_total, etat_projet, client_id) VALUES (?, ?, ?, CAST(? AS etatprojet), ?)";
         try (PreparedStatement pstmt = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             pstmt.setString(1, projet.getNomProjet());
             pstmt.setBigDecimal(2, projet.getMargeBeneficiaire());
-            pstmt.setBigDecimal(3, projet.getCoutTotal());
+            pstmt.setBigDecimal(3, BigDecimal.ZERO);
             pstmt.setString(4, projet.getEtatProjet().name());
             pstmt.setLong(5, projet.getClient().getId());
 
@@ -126,8 +128,11 @@ public class ProjetRepositoryImpl implements IProjetRepository {
         projet.setNomProjet(rs.getString("nom_projet"));
         projet.setMargeBeneficiaire(BigDecimal.valueOf(rs.getDouble("marge_beneficiaire")));
         projet.setCoutTotal(BigDecimal.valueOf(rs.getDouble("cout_total")));
-//        projet.setEtatProjet(EtatProjet.valueOf(rs.getString("etat_projet")));
-        projet.getClient().setId(rs.getLong("client_id"));
+        projet.setEtatProjet(EtatProjet.valueOf(rs.getString("etat_projet")));
+        Client client = new Client();
+        client.setId(rs.getLong("client_id"));
+        projet.setClient(client);
+
         return projet;
     }
 }

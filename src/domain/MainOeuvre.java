@@ -7,17 +7,14 @@ public class MainOeuvre extends Composant {
     private BigDecimal heuresTravail;
     private BigDecimal productiviteOuvrier;
 
-    // Constructors, getters, and setters
-    public MainOeuvre() {}
 
-    public MainOeuvre(String nom, BigDecimal tauxTva, Projet projet, BigDecimal tauxHoraire, BigDecimal heuresTravail, BigDecimal productiviteOuvrier) {
+    public MainOeuvre(String nom, String typeComposant, BigDecimal tauxTva, Projet projet, BigDecimal tauxHoraire, BigDecimal heuresTravail, BigDecimal productiviteOuvrier) {
         super(nom, "MainOeuvre", tauxTva, projet);
         this.tauxHoraire = tauxHoraire;
         this.heuresTravail = heuresTravail;
         this.productiviteOuvrier = productiviteOuvrier;
     }
 
-    // Getters and setters
     public BigDecimal getTauxHoraire() { return tauxHoraire; }
     public void setTauxHoraire(BigDecimal tauxHoraire) { this.tauxHoraire = tauxHoraire; }
     public BigDecimal getHeuresTravail() { return heuresTravail; }
@@ -27,6 +24,9 @@ public class MainOeuvre extends Composant {
 
     @Override
     public BigDecimal calculerCout() {
-        return tauxHoraire.multiply(heuresTravail).multiply(productiviteOuvrier);
+        BigDecimal costWithoutTax = tauxHoraire.multiply(heuresTravail).multiply(productiviteOuvrier);
+        return costWithoutTax.add(costWithoutTax.multiply(getTauxTva()).divide(BigDecimal.valueOf(100)));
     }
-}
+    public BigDecimal calculerCoutSansTVA() {
+        return tauxHoraire.multiply(heuresTravail).multiply(productiviteOuvrier);
+    }}
