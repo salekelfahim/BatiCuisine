@@ -15,6 +15,13 @@ import java.util.List;
 import java.util.Optional;
 
 public class ComposantRepositoryImpl implements IComposantRepository {
+
+    private Connection connection;
+
+    public ComposantRepositoryImpl() {
+        this.connection = DataBaseConnection.getInstance().getConnection();
+    }
+
     @Override
     public void addComposant(Composant composant) {
         if (composant == null) {
@@ -27,15 +34,15 @@ public class ComposantRepositoryImpl implements IComposantRepository {
         CalculService calculService = new CalculService();
         BigDecimal coutComposant = BigDecimal.ZERO;
 
-        try (Connection conn = DataBaseConnection.getInstance().getConnection()) {
-            if (conn == null) {
-                throw new SQLException("Failed to establish database connection");
+        try {
+            if (connection == null || connection.isClosed()) {
+                connection = DataBaseConnection.getInstance().getConnection();
             }
 
-            conn.setAutoCommit(false);
+            connection.setAutoCommit(false);
 
-            try (PreparedStatement materiauStmt = conn.prepareStatement(materiauQuery, Statement.RETURN_GENERATED_KEYS);
-                 PreparedStatement mainOeuvreStmt = conn.prepareStatement(mainOeuvreQuery, Statement.RETURN_GENERATED_KEYS)) {
+            try (PreparedStatement materiauStmt = connection.prepareStatement(materiauQuery, Statement.RETURN_GENERATED_KEYS);
+                 PreparedStatement mainOeuvreStmt = connection.prepareStatement(mainOeuvreQuery, Statement.RETURN_GENERATED_KEYS)) {
 
                 if ("Materiau".equalsIgnoreCase(composant.getTypeComposant())) {
                     if (!(composant instanceof Materiau)) {
@@ -57,8 +64,7 @@ public class ComposantRepositoryImpl implements IComposantRepository {
                     if (rs.next()) {
                         long generatedId = rs.getLong(1);
                         coutComposant = calculService.calculateCostWithVAT(materiau);
-                    }
-                }
+                    }                }
                 else if ("MainOeuvre".equalsIgnoreCase(composant.getTypeComposant())) {
                     if (!(composant instanceof MainOeuvre)) {
                         throw new IllegalArgumentException("Composant of type MainOeuvre expected");
@@ -88,15 +94,15 @@ public class ComposantRepositoryImpl implements IComposantRepository {
                 projet.setCoutTotal(existingCoutTotal.add(coutComposant));
 
                 String updateProjetSql = "UPDATE projets SET cout_total = ? WHERE id = ?";
-                try (PreparedStatement updateStmt = conn.prepareStatement(updateProjetSql)) {
+                try (PreparedStatement updateStmt = connection.prepareStatement(updateProjetSql)) {
                     updateStmt.setBigDecimal(1, projet.getCoutTotal());
                     updateStmt.setLong(2, projet.getId());
                     updateStmt.executeUpdate();
                 }
 
-                conn.commit();
+                connection.commit();
             } catch (SQLException | IllegalArgumentException e) {
-                conn.rollback();
+                connection.rollback();
                 throw e;
             }
         } catch (SQLException e) {
@@ -104,39 +110,44 @@ public class ComposantRepositoryImpl implements IComposantRepository {
         }
     }
 
+
     @Override
     public List<Composant> getAllComposants() {
         List<Composant> composants = new ArrayList<>();
         String query = "SELECT * FROM composants";
-        try (Connection conn = DataBaseConnection.getInstance().getConnection();
-             Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(query)) {
-            while (rs.next()) {
-                Composant composant;
-                String type = rs.getString("type_composant");
-                if ("Materiau".equals(type)) {
-                    composant = new Materiau(
-                            rs.getString("nom"),
-                            rs.getString("type_composant"),
-                            rs.getBigDecimal("taux_tva"),
-                            fetchProjetById(rs.getLong("projet_id")),
-                            rs.getBigDecimal("cout_unitaire"),
-                            rs.getBigDecimal("quantite"),
-                            rs.getBigDecimal("cout_transport"),
-                            rs.getBigDecimal("coefficient_qualite")
-                    );
-                } else {
-                    composant = new MainOeuvre(
-                            rs.getString("nom"),
-                            rs.getString("type_composant"),
-                            rs.getBigDecimal("taux_tva"),
-                            fetchProjetById(rs.getLong("projet_id")),
-                            rs.getBigDecimal("taux_horaire"),
-                            rs.getBigDecimal("heures_travail"),
-                            rs.getBigDecimal("productivite_ouvrier")
-                    );
+        try {
+            if (connection == null || connection.isClosed()) {
+                connection = DataBaseConnection.getInstance().getConnection();
+            }
+            try (Statement stmt = connection.createStatement();
+                 ResultSet rs = stmt.executeQuery(query)) {
+                while (rs.next()) {
+                    Composant composant;
+                    String type = rs.getString("type_composant");
+                    if ("Materiau".equals(type)) {
+                        composant = new Materiau(
+                                rs.getString("nom"),
+                                rs.getString("type_composant"),
+                                rs.getBigDecimal("taux_tva"),
+                                fetchProjetById(rs.getLong("projet_id")),
+                                rs.getBigDecimal("cout_unitaire"),
+                                rs.getBigDecimal("quantite"),
+                                rs.getBigDecimal("cout_transport"),
+                                rs.getBigDecimal("coefficient_qualite")
+                        );
+                    } else {
+                        composant = new MainOeuvre(
+                                rs.getString("nom"),
+                                rs.getString("type_composant"),
+                                rs.getBigDecimal("taux_tva"),
+                                fetchProjetById(rs.getLong("projet_id")),
+                                rs.getBigDecimal("taux_horaire"),
+                                rs.getBigDecimal("heures_travail"),
+                                rs.getBigDecimal("productivite_ouvrier")
+                        );
+                    }
+                    composants.add(composant);
                 }
-                composants.add(composant);
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -147,33 +158,37 @@ public class ComposantRepositoryImpl implements IComposantRepository {
     @Override
     public Composant getComposantById(Long id) {
         String query = "SELECT * FROM composants WHERE id = ?";
-        try (Connection conn = DataBaseConnection.getInstance().getConnection();
-             PreparedStatement stmt = conn.prepareStatement(query)) {
-            stmt.setLong(1, id);
-            ResultSet rs = stmt.executeQuery();
-            if (rs.next()) {
-                String type = rs.getString("type_composant");
-                if ("Materiau".equals(type)) {
-                    return new Materiau(
-                            rs.getString("nom"),
-                            rs.getString("type_composant"),
-                            rs.getBigDecimal("taux_tva"),
-                            fetchProjetById(rs.getLong("projet_id")),
-                            rs.getBigDecimal("cout_unitaire"),
-                            rs.getBigDecimal("quantite"),
-                            rs.getBigDecimal("cout_transport"),
-                            rs.getBigDecimal("coefficient_qualite")
-                    );
-                } else {
-                    return new MainOeuvre(
-                            rs.getString("nom"),
-                            rs.getString("type_composant"),
-                            rs.getBigDecimal("taux_tva"),
-                            fetchProjetById(rs.getLong("projet_id")),
-                            rs.getBigDecimal("taux_horaire"),
-                            rs.getBigDecimal("heures_travail"),
-                            rs.getBigDecimal("productivite_ouvrier")
-                    );
+        try {
+            if (connection == null || connection.isClosed()) {
+                connection = DataBaseConnection.getInstance().getConnection();
+            }
+            try (PreparedStatement stmt = connection.prepareStatement(query)) {
+                stmt.setLong(1, id);
+                ResultSet rs = stmt.executeQuery();
+                if (rs.next()) {
+                    String type = rs.getString("type_composant");
+                    if ("Materiau".equals(type)) {
+                        return new Materiau(
+                                rs.getString("nom"),
+                                rs.getString("type_composant"),
+                                rs.getBigDecimal("taux_tva"),
+                                fetchProjetById(rs.getLong("projet_id")),
+                                rs.getBigDecimal("cout_unitaire"),
+                                rs.getBigDecimal("quantite"),
+                                rs.getBigDecimal("cout_transport"),
+                                rs.getBigDecimal("coefficient_qualite")
+                        );
+                    } else {
+                        return new MainOeuvre(
+                                rs.getString("nom"),
+                                rs.getString("type_composant"),
+                                rs.getBigDecimal("taux_tva"),
+                                fetchProjetById(rs.getLong("projet_id")),
+                                rs.getBigDecimal("taux_horaire"),
+                                rs.getBigDecimal("heures_travail"),
+                                rs.getBigDecimal("productivite_ouvrier")
+                        );
+                    }
                 }
             }
         } catch (SQLException e) {
@@ -185,14 +200,18 @@ public class ComposantRepositoryImpl implements IComposantRepository {
     @Override
     public void updateComposant(Composant composant) {
         String query = "UPDATE composants SET nom = ?, type_composant = ?, taux_tva = ?, projet_id = ? WHERE id = ?";
-        try (Connection conn = DataBaseConnection.getInstance().getConnection(); // Use instance method
-             PreparedStatement stmt = conn.prepareStatement(query)) {
-            stmt.setString(1, composant.getNom());
-            stmt.setString(2, composant.getTypeComposant());
-            stmt.setBigDecimal(3, composant.getTauxTva());
-            stmt.setLong(4, composant.getProjet().getId());
-            stmt.setLong(5, composant.getId());
-            stmt.executeUpdate();
+        try {
+            if (connection == null || connection.isClosed()) {
+                connection = DataBaseConnection.getInstance().getConnection();
+            }
+            try (PreparedStatement stmt = connection.prepareStatement(query)) {
+                stmt.setString(1, composant.getNom());
+                stmt.setString(2, composant.getTypeComposant());
+                stmt.setBigDecimal(3, composant.getTauxTva());
+                stmt.setLong(4, composant.getProjet().getId());
+                stmt.setLong(5, composant.getId());
+                stmt.executeUpdate();
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -201,10 +220,14 @@ public class ComposantRepositoryImpl implements IComposantRepository {
     @Override
     public void deleteComposant(Long id) {
         String query = "DELETE FROM composants WHERE id = ?";
-        try (Connection conn = DataBaseConnection.getInstance().getConnection();
-             PreparedStatement stmt = conn.prepareStatement(query)) {
-            stmt.setLong(1, id);
-            stmt.executeUpdate();
+        try {
+            if (connection == null || connection.isClosed()) {
+                connection = DataBaseConnection.getInstance().getConnection();
+            }
+            try (PreparedStatement stmt = connection.prepareStatement(query)) {
+                stmt.setLong(1, id);
+                stmt.executeUpdate();
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -214,21 +237,25 @@ public class ComposantRepositoryImpl implements IComposantRepository {
     public List<Materiau> getAllMateriaux() {
         List<Materiau> materiaux = new ArrayList<>();
         String query = "SELECT * FROM composants WHERE type_composant = 'Materiau'";
-        try (Connection conn = DataBaseConnection.getInstance().getConnection();
-             Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(query)) {
-            while (rs.next()) {
-                Materiau materiau = new Materiau(
-                        rs.getString("nom"),
-                        rs.getString("type_composant"),
-                        rs.getBigDecimal("taux_tva"),
-                        fetchProjetById(rs.getLong("projet_id")),
-                        rs.getBigDecimal("cout_unitaire"),
-                        rs.getBigDecimal("quantite"),
-                        rs.getBigDecimal("cout_transport"),
-                        rs.getBigDecimal("coefficient_qualite")
-                );
-                materiaux.add(materiau);
+        try {
+            if (connection == null || connection.isClosed()) {
+                connection = DataBaseConnection.getInstance().getConnection();
+            }
+            try (Statement stmt = connection.createStatement();
+                 ResultSet rs = stmt.executeQuery(query)) {
+                while (rs.next()) {
+                    Materiau materiau = new Materiau(
+                            rs.getString("nom"),
+                            rs.getString("type_composant"),
+                            rs.getBigDecimal("taux_tva"),
+                            fetchProjetById(rs.getLong("projet_id")),
+                            rs.getBigDecimal("cout_unitaire"),
+                            rs.getBigDecimal("quantite"),
+                            rs.getBigDecimal("cout_transport"),
+                            rs.getBigDecimal("coefficient_qualite")
+                    );
+                    materiaux.add(materiau);
+                }
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -240,20 +267,24 @@ public class ComposantRepositoryImpl implements IComposantRepository {
     public List<MainOeuvre> getAllMainOeuvres() {
         List<MainOeuvre> mainOeuvres = new ArrayList<>();
         String query = "SELECT * FROM composants WHERE type_composant = 'MainOeuvre'";
-        try (Connection conn = DataBaseConnection.getInstance().getConnection();
-             Statement stmt = conn.createStatement();
-             ResultSet rs = stmt.executeQuery(query)) {
-            while (rs.next()) {
-                MainOeuvre mainOeuvre = new MainOeuvre(
-                        rs.getString("nom"),
-                        rs.getString("type_composant"),
-                        rs.getBigDecimal("taux_tva"),
-                        fetchProjetById(rs.getLong("projet_id")),
-                        rs.getBigDecimal("taux_horaire"),
-                        rs.getBigDecimal("heures_travail"),
-                        rs.getBigDecimal("productivite_ouvrier")
-                );
-                mainOeuvres.add(mainOeuvre);
+        try {
+            if (connection == null || connection.isClosed()) {
+                connection = DataBaseConnection.getInstance().getConnection();
+            }
+            try (Statement stmt = connection.createStatement();
+                 ResultSet rs = stmt.executeQuery(query)) {
+                while (rs.next()) {
+                    MainOeuvre mainOeuvre = new MainOeuvre(
+                            rs.getString("nom"),
+                            rs.getString("type_composant"),
+                            rs.getBigDecimal("taux_tva"),
+                            fetchProjetById(rs.getLong("projet_id")),
+                            rs.getBigDecimal("taux_horaire"),
+                            rs.getBigDecimal("heures_travail"),
+                            rs.getBigDecimal("productivite_ouvrier")
+                    );
+                    mainOeuvres.add(mainOeuvre);
+                }
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -266,4 +297,5 @@ public class ComposantRepositoryImpl implements IComposantRepository {
         Optional<Projet> projetOptional = projetRepository.findById(projetId);
         return projetOptional.orElse(null);
     }
+
 }

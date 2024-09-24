@@ -37,9 +37,8 @@ public class ConsoleView {
             System.out.println("4. Update a client");
             System.out.println("5. Delete a client");
             System.out.println("6. Add a new project");
-            System.out.println("7. Add a new component");
-            System.out.println("8. Generate devis");
-            System.out.println("9. Exit");
+            System.out.println("7. Generate devis");
+            System.out.println("8. Exit");
             System.out.print("Choose an option: ");
 
             int choice = scanner.nextInt();
@@ -65,12 +64,9 @@ public class ConsoleView {
                     addProject();
                     break;
                 case 7:
-                    addComponent();
-                    break;
-                case 8:
                     generateDevis();
                     break;
-                case 9:
+                case 8:
                     System.out.println("Exiting...");
                     return;
                 default:
@@ -168,9 +164,7 @@ public class ConsoleView {
 
     private void addProject() throws SQLException {
         System.out.println("\n=== Add a new project ===");
-
         Client client = findClientByNom();
-
         if (client == null) {
             System.out.println("Client not found. Project cannot be added.");
             return;
@@ -178,87 +172,73 @@ public class ConsoleView {
 
         System.out.print("Enter project name: ");
         String nomProjet = scanner.nextLine();
-
-
         System.out.print("Enter profit margin: ");
         BigDecimal margeBeneficiaire = scanner.nextBigDecimal();
         scanner.nextLine();
-
         System.out.print("Enter project state (ENCOURS, TERMINE, ANNULE): ");
         String etatProjetStr = scanner.nextLine();
-
         EtatProjet etatProjet;
         try {
             etatProjet = EtatProjet.valueOf(etatProjetStr.toUpperCase());
         } catch (IllegalArgumentException e) {
-            System.out.println("Invalid project state. Please use a valid state (e.g., IN_PROGRESS, COMPLETED).");
+            System.out.println("Invalid project state. Please use a valid state (e.g., ENCOURS, TERMINE, ANNULE).");
             return;
         }
 
-        Projet projet = new Projet(nomProjet, margeBeneficiaire, new BigDecimal(0).ZERO, etatProjet, client);
+        Projet projet = new Projet(nomProjet, margeBeneficiaire, BigDecimal.ZERO, etatProjet, client);
         projetService.createProjet(projet);
-
         System.out.println("Project added successfully!");
+
+        addComponent(projet);
     }
 
-    private void addComponent() {
-        System.out.println("\n=== Add a new component ===");
-        System.out.print("Enter project ID: ");
-        Long projetId = scanner.nextLong();
-        scanner.nextLine();
+    private void  addComponent(Projet projet) {
+        while (true) {
+            System.out.println("\n=== Add a new component to project: " + projet.getNomProjet() + " ===");
+            System.out.print("Enter component name: ");
+            String nomComposant = scanner.nextLine();
+            System.out.print("Enter component type (Materiau, MainOeuvre): ");
+            String typeComposant = scanner.nextLine();
+            System.out.print("Enter taux TVA: ");
+            BigDecimal tauxTva = scanner.nextBigDecimal();
+            scanner.nextLine();
 
-        Projet projet = projetService.getProjetById(projetId).orElse(null);
-        if (projet == null) {
-            System.out.println("Project not found. Component not added.");
-            return;
+            Composant composant;
+            if (typeComposant.equalsIgnoreCase("Materiau")) {
+                System.out.print("Enter cout unitaire: ");
+                BigDecimal coutUnitaire = scanner.nextBigDecimal();
+                System.out.print("Enter quantite: ");
+                BigDecimal quantite = scanner.nextBigDecimal();
+                System.out.print("Enter cout transport: ");
+                BigDecimal coutTransport = scanner.nextBigDecimal();
+                System.out.print("Enter coefficient qualite: ");
+                BigDecimal coefficientQualite = scanner.nextBigDecimal();
+                scanner.nextLine();
+                composant = new Materiau(nomComposant, typeComposant, tauxTva, projet, coutUnitaire, quantite, coutTransport, coefficientQualite);
+            } else if (typeComposant.equalsIgnoreCase("MainOeuvre")) {
+                System.out.print("Enter taux horaire: ");
+                BigDecimal tauxHoraire = scanner.nextBigDecimal();
+                System.out.print("Enter heures travail: ");
+                BigDecimal heuresTravail = scanner.nextBigDecimal();
+                System.out.print("Enter productivite ouvrier: ");
+                BigDecimal productiviteOuvrier = scanner.nextBigDecimal();
+                scanner.nextLine();
+                composant = new MainOeuvre(nomComposant, typeComposant, tauxTva, projet, tauxHoraire, heuresTravail, productiviteOuvrier);
+            } else {
+                System.out.println("Invalid component type. Component not added.");
+                continue;
+            }
+
+            composantService.save(composant);
+            System.out.println("Component added successfully!");
+
+            System.out.print("Do you want to add another component to this project? (yes/no): ");
+            String answer = scanner.nextLine();
+            if (!answer.equalsIgnoreCase("yes")) {
+                break;
+            }
         }
-
-        System.out.print("Enter component name: ");
-        String nomComposant = scanner.nextLine();
-
-        System.out.print("Enter component type (Materiau, MainOeuvre): ");
-        String typeComposant = scanner.nextLine();
-
-        System.out.print("Enter taux TVA: ");
-        BigDecimal tauxTva = scanner.nextBigDecimal();
-        scanner.nextLine();
-
-        Composant composant;
-
-        if (typeComposant.equalsIgnoreCase("Materiau")) {
-            System.out.print("Enter cout unitaire: ");
-            BigDecimal coutUnitaire = scanner.nextBigDecimal();
-
-            System.out.print("Enter quantite: ");
-            BigDecimal quantite = scanner.nextBigDecimal();
-
-            System.out.print("Enter cout transport: ");
-            BigDecimal coutTransport = scanner.nextBigDecimal();
-
-            System.out.print("Enter coefficient qualite: ");
-            BigDecimal coefficientQualite = scanner.nextBigDecimal();
-
-            composant = new Materiau(nomComposant, typeComposant, tauxTva, projet,
-                    coutUnitaire, quantite, coutTransport, coefficientQualite);
-        } else if (typeComposant.equalsIgnoreCase("MainOeuvre")) {
-            System.out.print("Enter taux horaire: ");
-            BigDecimal tauxHoraire = scanner.nextBigDecimal();
-
-            System.out.print("Enter heures travail: ");
-            BigDecimal heuresTravail = scanner.nextBigDecimal();
-
-            System.out.print("Enter productivite ouvrier: ");
-            BigDecimal productiviteOuvrier = scanner.nextBigDecimal();
-
-            composant = new MainOeuvre(nomComposant, typeComposant, tauxTva, projet,
-                    tauxHoraire, heuresTravail, productiviteOuvrier);
-        } else {
-            System.out.println("Invalid component type. Component not added.");
-            return;
-        }
-
-        composantService.save(composant);
-        System.out.println("Component added successfully!");
+        System.out.println("Returning to main menu.");
     }
 
     private void generateDevis () {
