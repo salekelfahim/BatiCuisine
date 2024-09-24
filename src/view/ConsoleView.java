@@ -31,15 +31,11 @@ public class ConsoleView {
 
     public void displayMenu() throws SQLException {
         while (true) {
-            System.out.println("\n=== Management Menu ===");
-            System.out.println("1. Add a new client");
-            System.out.println("2. Show all clients");
-            System.out.println("3. Find Client by Name");
-            System.out.println("4. Update a client");
-            System.out.println("5. Delete a client");
-            System.out.println("6. Add a new project");
-            System.out.println("7. Generate devis");
-            System.out.println("8. Exit");
+            System.out.println("=== Main Menu ===");
+            System.out.println("1. Create a new project");
+            System.out.println("2. Show existing projects");
+            System.out.println("3. Calculate project cost");
+            System.out.println("4. Exit");
             System.out.print("Choose an option: ");
 
             int choice = scanner.nextInt();
@@ -47,27 +43,15 @@ public class ConsoleView {
 
             switch (choice) {
                 case 1:
-                    addClient();
+                    newProjet();
                     break;
                 case 2:
-                    showAllClients();
+                    showAllProjects();
                     break;
                 case 3:
-                    findClientByNom();
-                    break;
-                case 4:
-                    updateClient();
-                    break;
-                case 5:
-                    deleteClient();
-                    break;
-                case 6:
-                    addProject();
-                    break;
-                case 7:
                     generateDevis();
                     break;
-                case 8:
+                case 4:
                     System.out.println("Exiting...");
                     return;
                 default:
@@ -76,7 +60,34 @@ public class ConsoleView {
         }
     }
 
-    private void addClient() {
+    private void newProjet() throws SQLException {
+        System.out.println("\n--- Client Search ---");
+        System.out.println("Would you like to search for an existing client or add a new one?");
+        System.out.println("1. Search for existing client");
+        System.out.println("2. Add a new client");
+        System.out.print("Choose an option: ");
+        int choice = scanner.nextInt();
+        scanner.nextLine();
+
+        Client client;
+        if (choice == 1) {
+            client = findClientByNom();
+        } else {
+            client = addClient();
+        }
+
+        if (client != null) {
+            System.out.println("Continue with this client? (y/n): ");
+            String confirm = scanner.nextLine();
+            if (confirm.equalsIgnoreCase("y")) {
+                addProject(client);
+            } else {
+                System.out.println("Returning to main menu.");
+            }
+        }
+    }
+
+    private Client addClient() {
         System.out.println("\n=== Add a new client ===");
         System.out.print("Enter name: ");
         String name = scanner.nextLine();
@@ -86,91 +97,85 @@ public class ConsoleView {
         String phone = scanner.nextLine();
         System.out.print("Is professional (true/false): ");
         boolean isProfessional = scanner.nextBoolean();
-
+        scanner.nextLine();
         Client newClient = new Client(name, address, phone, isProfessional);
         clientService.save(newClient);
         System.out.println("Client added successfully!");
+        return newClient;
     }
 
-    private void showAllClients() {
-        System.out.println("\n=== All Clients ===");
-        List<Client> clients = clientService.findAll();
-        if (clients.isEmpty()) {
-            System.out.println("No clients found.");
-        } else {
-            for (Client client : clients) {
-                System.out.printf("ID: %d, Nom: %s, Téléphone: %s, Adresse : %s , Pro: %s %n",
-                        client.getId(), client.getNom(), client.getTelephone(),client.getAdresse(), client.isEstProfessionnel() ? "true" : "false");
-            }
-        }
-    }
+//    private void showAllClients() {
+//        System.out.println("\n=== All Clients ===");
+//        List<Client> clients = clientService.findAll();
+//        if (clients.isEmpty()) {
+//            System.out.println("No clients found.");
+//        } else {
+//            for (Client client : clients) {
+//                System.out.printf("ID: %d, Nom: %s, Téléphone: %s, Adresse : %s , Pro: %s %n",
+//                        client.getId(), client.getNom(), client.getTelephone(),client.getAdresse(), client.isEstProfessionnel() ? "true" : "false");
+//            }
+//        }
+//    }
 
-    private void updateClient() {
-        System.out.println("\n=== Update a client ===");
-        System.out.print("Enter client ID to update: ");
-        Long id = scanner.nextLong();
-        scanner.nextLine();
+//    private void updateClient() {
+//        System.out.println("\n=== Update a client ===");
+//        System.out.print("Enter client ID to update: ");
+//        Long id = scanner.nextLong();
+//        scanner.nextLine();
+//
+//        Optional<Client> clientOpt = clientService.findById(id);
+//        if (clientOpt.isPresent()) {
+//            Client client = clientOpt.get();
+//            System.out.println("Current client details: " + client);
+//
+//            System.out.print("Enter new name (or press enter to keep current): ");
+//            String name = scanner.nextLine();
+//            if (!name.isEmpty()) client.setNom(name);
+//
+//            System.out.print("Enter new address (or press enter to keep current): ");
+//            String address = scanner.nextLine();
+//            if (!address.isEmpty()) client.setAdresse(address);
+//
+//            System.out.print("Enter new phone (or press enter to keep current): ");
+//            String phone = scanner.nextLine();
+//            if (!phone.isEmpty()) client.setTelephone(phone);
+//
+//            System.out.print("Update professional status (true/false, or press enter to keep current): ");
+//            String isProfessionalStr = scanner.nextLine();
+//            if (!isProfessionalStr.isEmpty()) {
+//                client.setEstProfessionnel(Boolean.parseBoolean(isProfessionalStr));
+//            }
+//
+//            clientService.update(client);
+//            System.out.println("Client updated successfully!");
+//        } else {
+//            System.out.println("Client not found.");
+//        }
+//    }
 
-        Optional<Client> clientOpt = clientService.findById(id);
-        if (clientOpt.isPresent()) {
-            Client client = clientOpt.get();
-            System.out.println("Current client details: " + client);
+//    private void deleteClient() {
+//        System.out.println("\n=== Delete a client ===");
+//        System.out.print("Enter client ID to delete: ");
+//        Long id = scanner.nextLong();
+//        scanner.nextLine();
+//
+//        Optional<Client> clientOpt = clientService.findById(id);
+//        if (clientOpt.isPresent()) {
+//            System.out.println("Are you sure you want to delete this client? (y/n)");
+//            System.out.println(clientOpt.get());
+//            String confirm = scanner.nextLine();
+//            if (confirm.equalsIgnoreCase("y")) {
+//                clientService.delete(id);
+//                System.out.println("Client deleted successfully!");
+//            } else {
+//                System.out.println("Deletion cancelled.");
+//            }
+//        } else {
+//            System.out.println("Client not found.");
+//        }
+//    }
 
-            System.out.print("Enter new name (or press enter to keep current): ");
-            String name = scanner.nextLine();
-            if (!name.isEmpty()) client.setNom(name);
-
-            System.out.print("Enter new address (or press enter to keep current): ");
-            String address = scanner.nextLine();
-            if (!address.isEmpty()) client.setAdresse(address);
-
-            System.out.print("Enter new phone (or press enter to keep current): ");
-            String phone = scanner.nextLine();
-            if (!phone.isEmpty()) client.setTelephone(phone);
-
-            System.out.print("Update professional status (true/false, or press enter to keep current): ");
-            String isProfessionalStr = scanner.nextLine();
-            if (!isProfessionalStr.isEmpty()) {
-                client.setEstProfessionnel(Boolean.parseBoolean(isProfessionalStr));
-            }
-
-            clientService.update(client);
-            System.out.println("Client updated successfully!");
-        } else {
-            System.out.println("Client not found.");
-        }
-    }
-
-    private void deleteClient() {
-        System.out.println("\n=== Delete a client ===");
-        System.out.print("Enter client ID to delete: ");
-        Long id = scanner.nextLong();
-        scanner.nextLine();
-
-        Optional<Client> clientOpt = clientService.findById(id);
-        if (clientOpt.isPresent()) {
-            System.out.println("Are you sure you want to delete this client? (y/n)");
-            System.out.println(clientOpt.get());
-            String confirm = scanner.nextLine();
-            if (confirm.equalsIgnoreCase("y")) {
-                clientService.delete(id);
-                System.out.println("Client deleted successfully!");
-            } else {
-                System.out.println("Deletion cancelled.");
-            }
-        } else {
-            System.out.println("Client not found.");
-        }
-    }
-
-    private void addProject() throws SQLException {
-        System.out.println("\n=== Add a new project ===");
-        Client client = findClientByNom();
-        if (client == null) {
-            System.out.println("Client not found. Project cannot be added.");
-            return;
-        }
-
+    private void addProject(Client client) throws SQLException {
         System.out.print("Enter project name: ");
         String nomProjet = scanner.nextLine();
         System.out.print("Enter profit margin: ");
@@ -286,11 +291,40 @@ public class ConsoleView {
 
         Optional<Client> clientOpt = clientService.findByNom(nom);
         if (clientOpt.isPresent()) {
-            System.out.println("Client found: " + clientOpt.get());
-            return clientOpt.get();
+            Client client = clientOpt.get();
+            System.out.println("\nClient Details:");
+            System.out.println("ID: " + client.getId());
+            System.out.println("Name: " + client.getNom());
+            System.out.println("Address: " + client.getAdresse());
+            System.out.println("Phone: " + client.getTelephone());
+            System.out.println("Is Professional: " + (client.isEstProfessionnel() ? "Yes" : "No"));
+            return client;
         } else {
             System.out.println("No client found with the name: " + nom);
             return null;
+        }
+    }
+
+    public void showAllProjects() {
+        List<Projet> projects = projetService.getAllProjets();
+
+        if (projects.isEmpty()) {
+            System.out.println("No projects found.");
+        } else {
+            System.out.println("List of available projects:\n");
+            System.out.println("-----------------------------------------------------------------");
+            System.out.printf("| %-5s | %-20s | %-15s | %-15s |\n", "ID", "Project Name", "Margin", "Total Cost");
+            System.out.println("-----------------------------------------------------------------");
+
+            for (Projet project : projects) {
+                System.out.printf("| %-5d | %-20s | %-15s | %-15s |\n",
+                        project.getId(),
+                        project.getNomProjet(),
+                        project.getMargeBeneficiaire() != null ? project.getMargeBeneficiaire().toString() : "N/A",
+                        project.getCoutTotal() != null ? project.getCoutTotal().toString() : "N/A"
+                );
+            }
+            System.out.println("-----------------------------------------------------------------");
         }
     }
 }
