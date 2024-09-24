@@ -7,6 +7,7 @@ import service.ComposantService;
 import service.DevisService;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.List;
@@ -241,31 +242,43 @@ public class ConsoleView {
         System.out.println("Returning to main menu.");
     }
 
-    private void generateDevis () {
-            System.out.println("\n=== Generate a quote (devis) ===");
-            System.out.print("Enter project ID: ");
-            Long projetId = scanner.nextLong();
-            Projet projet = projetService.getProjetById(projetId).orElse(null);
+    private void generateDevis() {
+        System.out.println("\n=== Generate a devis ===");
 
-            if (projet != null) {
-                System.out.print("Enter estimated amount: ");
-                BigDecimal montantEstime = scanner.nextBigDecimal();
-                System.out.print("Enter emission date (YYYY-MM-DD): ");
-                String dateEmissionStr = scanner.next();
-                LocalDate dateEmission = LocalDate.parse(dateEmissionStr);
-                System.out.print("Enter validity date (YYYY-MM-DD): ");
-                String dateValiditeStr = scanner.next();
-                LocalDate dateValidite = LocalDate.parse(dateValiditeStr);
-                System.out.print("Is the quote accepted (true/false): ");
-                boolean accepte = scanner.nextBoolean();
+        System.out.print("Enter project ID: ");
+        Long projetId = scanner.nextLong();
+        Projet projet = projetService.getProjetById(projetId).orElse(null);
 
-                Devis devis = new Devis(montantEstime, dateEmission, dateValidite, accepte, projet);
-                devisService.createDevis(devis);
-                System.out.println("Quote generated successfully!");
-            } else {
-                System.out.println("Project not found.");
+        if (projet != null) {
+            System.out.print("Enter emission date (YYYY-MM-DD): ");
+            String dateEmissionStr = scanner.next();
+            LocalDate dateEmission = LocalDate.parse(dateEmissionStr);
+
+            System.out.print("Enter validity date (YYYY-MM-DD): ");
+            String dateValiditeStr = scanner.next();
+            LocalDate dateValidite = LocalDate.parse(dateValiditeStr);
+
+            BigDecimal coutTotal = projet.getCoutTotal();
+            BigDecimal margeBeneficiaire = projet.getMargeBeneficiaire();
+            BigDecimal montantEstime = coutTotal.add(margeBeneficiaire);
+
+            if (projet.getClient().isEstProfessionnel()){
+                montantEstime = montantEstime.multiply(BigDecimal.valueOf(9)).divide(BigDecimal.valueOf(100), RoundingMode.HALF_UP);
             }
+
+            System.out.print("Is the devis accepted? (1 for yes, 0 for no): ");
+            int choix = scanner.nextInt();
+            boolean accepte = (choix == 1);
+
+            Devis devis = new Devis(montantEstime, dateEmission, dateValidite, accepte, projet);
+            devisService.createDevis(devis);
+
+            System.out.println("Devis generated successfully!");
+            System.out.println("Estimated amount: " + montantEstime);
+        } else {
+            System.out.println("Project not found.");
         }
+    }
     private Client findClientByNom() throws SQLException {
         System.out.println("\n=== Find Client by Name ===");
         System.out.print("Enter client name: ");
