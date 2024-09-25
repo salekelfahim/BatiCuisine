@@ -10,6 +10,7 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Optional;
 import java.util.Scanner;
@@ -38,8 +39,7 @@ public class ConsoleView {
             System.out.println("4. Exit");
             System.out.print("Choose an option: ");
 
-            int choice = scanner.nextInt();
-            scanner.nextLine();
+            int choice = getIntInput(1, 4);
 
             switch (choice) {
                 case 1:
@@ -54,8 +54,6 @@ public class ConsoleView {
                 case 4:
                     System.out.println("Exiting...");
                     return;
-                default:
-                    System.out.println("Invalid option. Please try again.");
             }
         }
     }
@@ -66,8 +64,7 @@ public class ConsoleView {
         System.out.println("1. Search for existing client");
         System.out.println("2. Add a new client");
         System.out.print("Choose an option: ");
-        int choice = scanner.nextInt();
-        scanner.nextLine();
+        int choice = getIntInput(1, 2);
 
         Client client;
         if (choice == 1) {
@@ -78,7 +75,7 @@ public class ConsoleView {
 
         if (client != null) {
             System.out.println("Continue with this client? (y/n): ");
-            String confirm = scanner.nextLine();
+            String confirm = getStringInput();
             if (confirm.equalsIgnoreCase("y")) {
                 addProject(client);
             } else {
@@ -89,107 +86,21 @@ public class ConsoleView {
 
     private Client addClient() {
         System.out.println("\n=== Add a new client ===");
-        System.out.print("Enter name: ");
-        String name = scanner.nextLine();
-        System.out.print("Enter address: ");
-        String address = scanner.nextLine();
-        System.out.print("Enter phone: ");
-        String phone = scanner.nextLine();
-        System.out.print("Is professional (true/false): ");
-        boolean isProfessional = scanner.nextBoolean();
-        scanner.nextLine();
+        String name = getStringInput("Enter name: ");
+        String address = getStringInput("Enter address: ");
+        String phone = getStringInput("Enter phone: ");
+        boolean isProfessional = getBooleanInput("Is professional (true/false): ");
+
         Client newClient = new Client(name, address, phone, isProfessional);
         clientService.save(newClient);
         System.out.println("Client added successfully!");
         return newClient;
     }
 
-//    private void showAllClients() {
-//        System.out.println("\n=== All Clients ===");
-//        List<Client> clients = clientService.findAll();
-//        if (clients.isEmpty()) {
-//            System.out.println("No clients found.");
-//        } else {
-//            for (Client client : clients) {
-//                System.out.printf("ID: %d, Nom: %s, Téléphone: %s, Adresse : %s , Pro: %s %n",
-//                        client.getId(), client.getNom(), client.getTelephone(),client.getAdresse(), client.isEstProfessionnel() ? "true" : "false");
-//            }
-//        }
-//    }
-
-//    private void updateClient() {
-//        System.out.println("\n=== Update a client ===");
-//        System.out.print("Enter client ID to update: ");
-//        Long id = scanner.nextLong();
-//        scanner.nextLine();
-//
-//        Optional<Client> clientOpt = clientService.findById(id);
-//        if (clientOpt.isPresent()) {
-//            Client client = clientOpt.get();
-//            System.out.println("Current client details: " + client);
-//
-//            System.out.print("Enter new name (or press enter to keep current): ");
-//            String name = scanner.nextLine();
-//            if (!name.isEmpty()) client.setNom(name);
-//
-//            System.out.print("Enter new address (or press enter to keep current): ");
-//            String address = scanner.nextLine();
-//            if (!address.isEmpty()) client.setAdresse(address);
-//
-//            System.out.print("Enter new phone (or press enter to keep current): ");
-//            String phone = scanner.nextLine();
-//            if (!phone.isEmpty()) client.setTelephone(phone);
-//
-//            System.out.print("Update professional status (true/false, or press enter to keep current): ");
-//            String isProfessionalStr = scanner.nextLine();
-//            if (!isProfessionalStr.isEmpty()) {
-//                client.setEstProfessionnel(Boolean.parseBoolean(isProfessionalStr));
-//            }
-//
-//            clientService.update(client);
-//            System.out.println("Client updated successfully!");
-//        } else {
-//            System.out.println("Client not found.");
-//        }
-//    }
-
-//    private void deleteClient() {
-//        System.out.println("\n=== Delete a client ===");
-//        System.out.print("Enter client ID to delete: ");
-//        Long id = scanner.nextLong();
-//        scanner.nextLine();
-//
-//        Optional<Client> clientOpt = clientService.findById(id);
-//        if (clientOpt.isPresent()) {
-//            System.out.println("Are you sure you want to delete this client? (y/n)");
-//            System.out.println(clientOpt.get());
-//            String confirm = scanner.nextLine();
-//            if (confirm.equalsIgnoreCase("y")) {
-//                clientService.delete(id);
-//                System.out.println("Client deleted successfully!");
-//            } else {
-//                System.out.println("Deletion cancelled.");
-//            }
-//        } else {
-//            System.out.println("Client not found.");
-//        }
-//    }
-
     private void addProject(Client client) throws SQLException {
-        System.out.print("Enter project name: ");
-        String nomProjet = scanner.nextLine();
-        System.out.print("Enter profit margin: ");
-        BigDecimal margeBeneficiaire = scanner.nextBigDecimal();
-        scanner.nextLine();
-        System.out.print("Enter project state (ENCOURS, TERMINE, ANNULE): ");
-        String etatProjetStr = scanner.nextLine();
-        EtatProjet etatProjet;
-        try {
-            etatProjet = EtatProjet.valueOf(etatProjetStr.toUpperCase());
-        } catch (IllegalArgumentException e) {
-            System.out.println("Invalid project state. Please use a valid state (e.g., ENCOURS, TERMINE, ANNULE).");
-            return;
-        }
+        String nomProjet = getStringInput("Enter project name: ");
+        BigDecimal margeBeneficiaire = getBigDecimalInput("Enter profit margin: ");
+        EtatProjet etatProjet = getEtatProjet();
 
         Projet projet = new Projet(nomProjet, margeBeneficiaire, BigDecimal.ZERO, etatProjet, client);
         projetService.createProjet(projet);
@@ -198,37 +109,24 @@ public class ConsoleView {
         addComponent(projet);
     }
 
-    private void  addComponent(Projet projet) {
+    private void addComponent(Projet projet) {
         while (true) {
             System.out.println("\n=== Add a new component to project: " + projet.getNomProjet() + " ===");
-            System.out.print("Enter component name: ");
-            String nomComposant = scanner.nextLine();
-            System.out.print("Enter component type (Materiau, MainOeuvre): ");
-            String typeComposant = scanner.nextLine();
-            System.out.print("Enter taux TVA: ");
-            BigDecimal tauxTva = scanner.nextBigDecimal();
-            scanner.nextLine();
+            String nomComposant = getStringInput("Enter component name: ");
+            String typeComposant = getStringInput("Enter component type (Materiau, MainOeuvre): ");
+            BigDecimal tauxTva = getBigDecimalInput("Enter taux TVA: ");
 
             Composant composant;
             if (typeComposant.equalsIgnoreCase("Materiau")) {
-                System.out.print("Enter cout unitaire: ");
-                BigDecimal coutUnitaire = scanner.nextBigDecimal();
-                System.out.print("Enter quantite: ");
-                BigDecimal quantite = scanner.nextBigDecimal();
-                System.out.print("Enter cout transport: ");
-                BigDecimal coutTransport = scanner.nextBigDecimal();
-                System.out.print("Enter coefficient qualite: ");
-                BigDecimal coefficientQualite = scanner.nextBigDecimal();
-                scanner.nextLine();
+                BigDecimal coutUnitaire = getBigDecimalInput("Enter cout unitaire: ");
+                BigDecimal quantite = getBigDecimalInput("Enter quantite: ");
+                BigDecimal coutTransport = getBigDecimalInput("Enter cout transport: ");
+                BigDecimal coefficientQualite = getBigDecimalInput("Enter coefficient qualite: ");
                 composant = new Materiau(nomComposant, typeComposant, tauxTva, projet, coutUnitaire, quantite, coutTransport, coefficientQualite);
             } else if (typeComposant.equalsIgnoreCase("MainOeuvre")) {
-                System.out.print("Enter taux horaire: ");
-                BigDecimal tauxHoraire = scanner.nextBigDecimal();
-                System.out.print("Enter heures travail: ");
-                BigDecimal heuresTravail = scanner.nextBigDecimal();
-                System.out.print("Enter productivite ouvrier: ");
-                BigDecimal productiviteOuvrier = scanner.nextBigDecimal();
-                scanner.nextLine();
+                BigDecimal tauxHoraire = getBigDecimalInput("Enter taux horaire: ");
+                BigDecimal heuresTravail = getBigDecimalInput("Enter heures travail: ");
+                BigDecimal productiviteOuvrier = getBigDecimalInput("Enter productivite ouvrier: ");
                 composant = new MainOeuvre(nomComposant, typeComposant, tauxTva, projet, tauxHoraire, heuresTravail, productiviteOuvrier);
             } else {
                 System.out.println("Invalid component type. Component not added.");
@@ -238,9 +136,7 @@ public class ConsoleView {
             composantService.save(composant);
             System.out.println("Component added successfully!");
 
-            System.out.print("Do you want to add another component to this project? (yes/no): ");
-            String answer = scanner.nextLine();
-            if (!answer.equalsIgnoreCase("yes")) {
+            if (!getBooleanInput("Do you want to add another component to this project? (true/false): ")) {
                 break;
             }
         }
@@ -250,39 +146,28 @@ public class ConsoleView {
     private void generateDevis() {
         System.out.println("\n=== Generate a devis ===");
 
-        System.out.print("Enter project ID: ");
-        Long projetId = scanner.nextLong();
+        Long projetId = getLongInput("Enter project ID: ");
         Projet projet = projetService.getProjetById(projetId).orElse(null);
 
         if (projet != null) {
-            System.out.print("Enter emission date (YYYY-MM-DD): ");
-            String dateEmissionStr = scanner.next();
-            LocalDate dateEmission = LocalDate.parse(dateEmissionStr);
-
+            LocalDate dateEmission = getDateInput("Enter emission date (YYYY-MM-DD): ");
             LocalDate dateValidite;
-            while (true) {
-                System.out.print("Enter validity date (YYYY-MM-DD): ");
-                String dateValiditeStr = scanner.next();
-                dateValidite = LocalDate.parse(dateValiditeStr);
-
-                if (dateValidite.isAfter(dateEmission)) {
-                    break;
-                } else {
+            do {
+                dateValidite = getDateInput("Enter validity date (YYYY-MM-DD): ");
+                if (!dateValidite.isAfter(dateEmission)) {
                     System.out.println("Invalid date. The validity date must be after the emission date. Please try again.");
                 }
-            }
+            } while (!dateValidite.isAfter(dateEmission));
 
             BigDecimal coutTotal = projet.getCoutTotal();
             BigDecimal margeBeneficiaire = projet.getMargeBeneficiaire();
             BigDecimal montantEstime = coutTotal.add(margeBeneficiaire);
 
-            if (projet.getClient().isEstProfessionnel()){
-                montantEstime = montantEstime.multiply(BigDecimal.valueOf(9)).divide(BigDecimal.valueOf(100), RoundingMode.HALF_UP);
+            if (projet.getClient().isEstProfessionnel()) {
+                montantEstime = montantEstime.multiply(BigDecimal.valueOf(0.9)).setScale(2, RoundingMode.HALF_UP);
             }
 
-            System.out.print("Is the devis accepted? (1 for yes, 0 for no): ");
-            int choix = scanner.nextInt();
-            boolean accepte = (choix == 1);
+            boolean accepte = getBooleanInput("Is the devis accepted? (true/false): ");
 
             Devis devis = new Devis(montantEstime, dateEmission, dateValidite, accepte, projet);
             devisService.createDevis(devis);
@@ -293,10 +178,10 @@ public class ConsoleView {
             System.out.println("Project not found.");
         }
     }
+
     private Client findClientByNom() throws SQLException {
         System.out.println("\n=== Find Client by Name ===");
-        System.out.print("Enter client name: ");
-        String nom = scanner.nextLine();
+        String nom = getStringInput("Enter client name: ");
 
         Optional<Client> clientOpt = clientService.findByNom(nom);
         if (clientOpt.isPresent()) {
@@ -334,6 +219,84 @@ public class ConsoleView {
                 );
             }
             System.out.println("-----------------------------------------------------------------");
+        }
+    }
+
+    private int getIntInput(int min, int max) {
+        while (true) {
+            try {
+                int input = Integer.parseInt(scanner.nextLine());
+                if (input >= min && input <= max) {
+                    return input;
+                }
+                System.out.printf("Please enter a number between %d and %d: ", min, max);
+            } catch (NumberFormatException e) {
+                System.out.print("Invalid input. Please enter a number: ");
+            }
+        }
+    }
+
+    private long getLongInput(String prompt) {
+        while (true) {
+            System.out.print(prompt);
+            try {
+                return Long.parseLong(scanner.nextLine());
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid input. Please enter a valid number.");
+            }
+        }
+    }
+
+    private BigDecimal getBigDecimalInput(String prompt) {
+        while (true) {
+            System.out.print(prompt);
+            try {
+                return new BigDecimal(scanner.nextLine());
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid input. Please enter a valid decimal number.");
+            }
+        }
+    }
+
+    private boolean getBooleanInput(String prompt) {
+        while (true) {
+            System.out.print(prompt);
+            String input = scanner.nextLine().toLowerCase();
+            if (input.equals("true") || input.equals("false")) {
+                return Boolean.parseBoolean(input);
+            }
+            System.out.println("Invalid input. Please enter 'true' or 'false'.");
+        }
+    }
+
+    private String getStringInput(String prompt) {
+        System.out.print(prompt);
+        return scanner.nextLine();
+    }
+
+    private String getStringInput() {
+        return scanner.nextLine();
+    }
+
+    private LocalDate getDateInput(String prompt) {
+        while (true) {
+            System.out.print(prompt);
+            try {
+                return LocalDate.parse(scanner.nextLine());
+            } catch (DateTimeParseException e) {
+                System.out.println("Invalid date format. Please use YYYY-MM-DD.");
+            }
+        }
+    }
+
+    private EtatProjet getEtatProjet() {
+        while (true) {
+            System.out.print("Enter project state (ENCOURS, TERMINE, ANNULE): ");
+            try {
+                return EtatProjet.valueOf(scanner.nextLine().toUpperCase());
+            } catch (IllegalArgumentException e) {
+                System.out.println("Invalid project state. Please use a valid state (e.g., ENCOURS, TERMINE, ANNULE).");
+            }
         }
     }
 }
