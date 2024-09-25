@@ -259,9 +259,18 @@ public class ConsoleView {
             String dateEmissionStr = scanner.next();
             LocalDate dateEmission = LocalDate.parse(dateEmissionStr);
 
-            System.out.print("Enter validity date (YYYY-MM-DD): ");
-            String dateValiditeStr = scanner.next();
-            LocalDate dateValidite = LocalDate.parse(dateValiditeStr);
+            LocalDate dateValidite;
+            while (true) {
+                System.out.print("Enter validity date (YYYY-MM-DD): ");
+                String dateValiditeStr = scanner.next();
+                dateValidite = LocalDate.parse(dateValiditeStr);
+
+                if (dateValidite.isAfter(dateEmission)) {
+                    break;
+                } else {
+                    System.out.println("Invalid date. The validity date must be after the emission date. Please try again.");
+                }
+            }
 
             BigDecimal coutTotal = projet.getCoutTotal();
             BigDecimal margeBeneficiaire = projet.getMargeBeneficiaire();
