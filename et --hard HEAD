@@ -1,0 +1,203 @@
+[33mcommit 079cf25ebc980198b4696fe3a33a35bf3e1c1da6[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mdevelop[m[33m, [m[1;31morigin/develop[m[33m)[m
+Author: salekelfahim <salekelfahim@gmail.com>
+Date:   Tue Sep 24 11:52:44 2024 +0100
+
+    Changing add Componnt logic
+
+[33mcommit dfff4826270be08186614cc948d16ea40195978b[m
+Author: salekelfahim <salekelfahim@gmail.com>
+Date:   Mon Sep 23 21:10:52 2024 +0100
+
+    Adding calculCout function
+
+[33mcommit 00abcd27b629712925bc6301aedea506cea9a6c1[m
+Author: salekelfahim <salekelfahim@gmail.com>
+Date:   Mon Sep 23 11:10:19 2024 +0100
+
+    Adding find by name option with all functions
+
+[33mcommit 4935317469c0aa6da4b1dc0574c1f9245a2a8fea[m
+Merge: 8797524 a51e753
+Author: Salek EL FAHIM <144855983+salekelfahim@users.noreply.github.com>
+Date:   Sun Sep 22 17:03:52 2024 +0100
+
+    Merge pull request #6 from salekelfahim/F-devis
+    
+    Adding Devis CRUD
+
+[33mcommit a51e753070b10da1dae1a626b204de7c0610abe0[m[33m ([m[1;31morigin/F-devis[m[33m, [m[1;32mF-devis[m[33m)[m
+Author: salekelfahim <salekelfahim@gmail.com>
+Date:   Sun Sep 22 16:52:14 2024 +0100
+
+    Adding DevisRepositoryImpl
+
+[33mcommit d244c74e3c285d4301b1936fa98b8f4a53b6bb70[m
+Author: salekelfahim <salekelfahim@gmail.com>
+Date:   Sun Sep 22 16:48:48 2024 +0100
+
+    Adding DevisService
+
+[33mcommit ce2f792c6f3bbbba80be6b9b262cc2dfa1368d2d[m
+Author: salekelfahim <salekelfahim@gmail.com>
+Date:   Sun Sep 22 16:45:58 2024 +0100
+
+    Adding IDevisRepository
+
+[33mcommit 8797524f2c1087f44331f2f96581719e41d2ade3[m
+Merge: 9b6bfda b126c99
+Author: Salek EL FAHIM <144855983+salekelfahim@users.noreply.github.com>
+Date:   Sun Sep 22 16:34:36 2024 +0100
+
+    Merge pull request #5 from salekelfahim/F-composant
+    
+    Adding All Composant CRUD
+
+[33mcommit b126c99a8da450a94b607d43ae8fbb842bd230ab[m[33m ([m[1;31morigin/F-composant[m[33m, [m[1;32mF-composant[m[33m)[m
+Author: salekelfahim <salekelfahim@gmail.com>
+Date:   Sun Sep 22 16:25:13 2024 +0100
+
+    Changing structure and adding all function of composant
+
+[33mcommit 51746a7731eb9ce4b63e0ff4c86763dd47d8c8bc[m
+Author: salekelfahim <salekelfahim@gmail.com>
+Date:   Sat Sep 21 17:15:13 2024 +0100
+
+    Adding Composant repository and service
+
+[33mcommit 9b6bfdae7e4166a2b9f3d8f52968d4a29f07e0f0[m
+Merge: 9677c7c 2b59d54
+Author: Salek EL FAHIM <144855983+salekelfahim@users.noreply.github.com>
+Date:   Sat Sep 21 16:23:05 2024 +0100
+
+    Merge pull request #4 from salekelfahim/F-projet
+    
+    Adding All projet CRUD
+
+[33mcommit 2b59d543ea88b5d76fcc25c95a06b859c7dab8b3[m[33m ([m[1;31morigin/F-projet[m[33m, [m[1;32mF-projet[m[33m)[m
+Author: salekelfahim <salekelfahim@gmail.com>
+Date:   Sat Sep 21 16:20:33 2024 +0100
+
+    Adding toString to projet
+
+[33mcommit e7c3c289d21fe1a08c4472020d022fb6357a372b[m
+Author: salekelfahim <salekelfahim@gmail.com>
+Date:   Sat Sep 21 16:18:46 2024 +0100
+
+    Adding Projet service
+
+[33mcommit e0e2ec5e92da0d8424e6e7b84bc854b031c5097a[m
+Author: salekelfahim <salekelfahim@gmail.com>
+Date:   Sat Sep 21 16:18:15 2024 +0100
+
+    Adding Projet repository
+
+[33mcommit 9677c7c2b2045747e4a9f399b6a55b86b7c5834a[m
+Merge: d7c7458 b424dc9
+Author: Salek EL FAHIM <144855983+salekelfahim@users.noreply.github.com>
+Date:   Sat Sep 21 15:53:21 2024 +0100
+
+    Merge pull request #3 from salekelfahim/F-client
+    
+    Adding All  CRUD function for client with View
+
+[33mcommit b424dc98a041046f1614db53974528a5b2ba9cf0[m[33m ([m[1;31morigin/F-client[m[33m, [m[1;32mF-client[m[33m)[m
+Author: salekelfahim <salekelfahim@gmail.com>
+Date:   Sat Sep 21 15:51:47 2024 +0100
+
+    Adding toString to Client class
+
+[33mcommit 8565c71633759ee186dea55d0e4cc01fff34fd0a[m
+Author: salekelfahim <salekelfahim@gmail.com>
+Date:   Fri Sep 20 17:24:00 2024 +0100
+
+    Adding View and main
+
+[33mcommit 9f2ca792e9799a4861c120b8dad964bbb59a5ffd[m
+Author: salekelfahim <salekelfahim@gmail.com>
+Date:   Fri Sep 20 17:12:51 2024 +0100
+
+    Adding ClientService
+
+[33mcommit 9316f82f6babdf93a4bf02e9fc007049946a5723[m
+Author: salekelfahim <salekelfahim@gmail.com>
+Date:   Fri Sep 20 16:57:35 2024 +0100
+
+    Adding interfaces and imlp
+
+[33mcommit ad9810e9fadc73b6143c1935810d01f20596e647[m
+Author: salekelfahim <salekelfahim@gmail.com>
+Date:   Fri Sep 20 16:02:37 2024 +0100
+
+    Adding Client CRUD in ClientRepository
+
+[33mcommit d7c7458022e65d3f0e43e9e1651e1a70a50ba317[m
+Merge: bbda3c6 61d0346
+Author: Salek EL FAHIM <144855983+salekelfahim@users.noreply.github.com>
+Date:   Fri Sep 20 12:38:54 2024 +0100
+
+    Merge pull request #2 from salekelfahim/repositories
+    
+    Adding Connection Instence to All Repositories
+
+[33mcommit 61d03462045324197556c96735fcfe288ba5fb87[m[33m ([m[1;31morigin/repositories[m[33m, [m[1;32mrepositories[m[33m)[m
+Author: salekelfahim <salekelfahim@gmail.com>
+Date:   Fri Sep 20 12:37:23 2024 +0100
+
+    Adding Connection Instence to All repoitories
+
+[33mcommit 6960f1a55ca347c2e19fe9f8c94fde7242b1480e[m
+Author: salekelfahim <salekelfahim@gmail.com>
+Date:   Fri Sep 20 12:35:19 2024 +0100
+
+    Adding Connection Instence to some repoitories
+
+[33mcommit bbda3c6152d007e7d090c9170bd07e2c926c0bf7[m
+Merge: 53242f2 29458da
+Author: Salek EL FAHIM <144855983+salekelfahim@users.noreply.github.com>
+Date:   Fri Sep 20 12:12:33 2024 +0100
+
+    Merge pull request #1 from salekelfahim/domains
+    
+    Adding all classes with getters and setters
+
+[33mcommit 29458daf87656edd09d147a40448a3c8f6245add[m[33m ([m[1;31morigin/domains[m[33m, [m[1;32mdomains[m[33m)[m
+Author: salekelfahim <salekelfahim@gmail.com>
+Date:   Fri Sep 20 12:04:22 2024 +0100
+
+    Adding Devis and Materiau classes
+
+[33mcommit 14cb61714f7e9ddcd964a3a9fd11b82eea27fee3[m
+Author: salekelfahim <salekelfahim@gmail.com>
+Date:   Fri Sep 20 12:00:08 2024 +0100
+
+    Adding Client, Composant, Projet, MaoinOeuvre classes
+
+[33mcommit 53242f20dc1c083b14c7f4d94be1693cfe6b872a[m
+Author: salekelfahim <salekelfahim@gmail.com>
+Date:   Fri Sep 20 11:49:26 2024 +0100
+
+    Adding EtatProjet Enum
+
+[33mcommit 1ae2120a2757522d091c6ea8fd717384a3b09127[m
+Author: salekelfahim <salekelfahim@gmail.com>
+Date:   Thu Sep 19 17:12:14 2024 +0100
+
+    Creating Database tables
+
+[33mcommit 063cc57b06e04d0bac78f4384536257c3487d185[m
+Author: salekelfahim <salekelfahim@gmail.com>
+Date:   Thu Sep 19 15:06:37 2024 +0100
+
+    Creating DataBaseConnection
+
+[33mcommit 2c1e5548511ac3de10cb4c5500f4f488251e9976[m
+Author: salekelfahim <salekelfahim@gmail.com>
+Date:   Thu Sep 19 14:55:56 2024 +0100
+
+    Project Structure
+
+[33mcommit d6de310cbffdc2ffed34024e6ef74470f804a5d9[m[33m ([m[1;31morigin/main[m[33m, [m[1;32mmain[m[33m)[m
+Author: salekelfahim <salekelfahim@gmail.com>
+Date:   Wed Sep 18 16:31:54 2024 +0100
+
+    Adding Project
